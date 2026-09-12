@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -12,7 +13,14 @@ public class HoleTrigger : MonoBehaviour
         if (other.CompareTag("Ball"))
         {
             Debug.Log("BALL IN HOLE! Loading: " + sceneName);
-            SceneManager.LoadScene(sceneName);
+            StartCoroutine(WinCoroutine());
         }
+    }
+
+    IEnumerator WinCoroutine()
+    {
+        yield return new WaitForSeconds(4f);
+        SoundFXManager.Instance.PlaySFX(SoundFXManager.Instance.winSound);
+        SceneManager.LoadScene(sceneName);
     }
 }

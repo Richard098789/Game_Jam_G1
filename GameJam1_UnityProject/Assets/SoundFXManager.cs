@@ -1,6 +1,5 @@
 using UnityEngine;
 
-[RequireComponent(typeof(AudioSource))]
 public class SoundFXManager : MonoBehaviour
 {
     public static SoundFXManager Instance { get; private set; }
@@ -11,11 +10,16 @@ public class SoundFXManager : MonoBehaviour
     public AudioClip ballHittingMetalSound;
     public AudioClip winSound;
     public AudioClip windBlowSound;
+    public AudioClip whooshSound;
+    public AudioClip dragSound;
 
     [Header("Pool Settings")]
     [SerializeField] private int poolSize = 10;
     private AudioSource[] sourcePool;
     private int currentPoolIndex = 0;
+
+    // TRACKING FOR DRAG SOUND
+    private AudioSource dragSource; 
 
     private void Awake()
     {
@@ -40,8 +44,6 @@ public class SoundFXManager : MonoBehaviour
             AudioSource newSource = gameObject.AddComponent<AudioSource>();
             newSource.playOnAwake = false;
             newSource.loop = false;
-            
-            // Set to 2D sound by default (0 = fully 2D, 1 = fully 3D)
             newSource.spatialBlend = 0f; 
 
             sourcePool[i] = newSource;
@@ -54,6 +56,8 @@ public class SoundFXManager : MonoBehaviour
 
         AudioSource source = sourcePool[currentPoolIndex];
 
+        // Ensure looping is turned off for standard, one-shot SFX
+        source.loop = false; 
         source.clip = clip;
         source.volume = volume;
         source.pitch = pitch;
@@ -62,5 +66,33 @@ public class SoundFXManager : MonoBehaviour
         currentPoolIndex = (currentPoolIndex + 1) % poolSize;
     }
 
-    
+    // NEW: Plays the drag sound looping, only if it isn't already playing
+    public void PlayDragSound(float volume = 1f, float pitch = 1f)
+    {
+        if (dragSound == null) return;
+        
+        // If it's already playing, do nothing and return out early
+        if (dragSource != null && dragSource.isPlaying) return;
+
+        // Grab the next available source in the pool
+        dragSource = sourcePool[currentPoolIndex];
+        
+        dragSource.clip = dragSound;
+        dragSource.volume = volume;
+        dragSource.pitch = pitch;
+        dragSource.loop = true; // Make it loop seamlessly while dragging
+        dragSource.Play();
+
+        currentPoolIndex = (currentPoolIndex + 1) % poolSize;
+    }
+
+    // NEW: Safely stops the drag sound loop
+    public void StopDragSound()
+    {
+        if (dragSource != null && dragSource.isPlaying && dragSource.clip == dragSound)
+        {
+            dragSource.Stop();
+            dragSource.loop = false; // Reset the loop flag for pool recycling
+        }
+    }
 }
