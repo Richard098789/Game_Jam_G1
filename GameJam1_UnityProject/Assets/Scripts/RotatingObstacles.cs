@@ -1,16 +1,12 @@
 using UnityEngine;
 
-public class NewMonoBehaviourScript : MonoBehaviour
+public class RotatingObstacles : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    [SerializeField] private float speed = 90f;
+    [SerializeField] private Vector3 axis = Vector3.up;
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        
+        transform.Rotate(axis.normalized * speed * Time.deltaTime, Space.Self);
     }
 }
